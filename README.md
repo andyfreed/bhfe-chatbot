@@ -188,6 +188,8 @@ bhfe-chatbot/
 ├── README.md                     # This file
 ├── QUICKSTART.md                 # 5-minute setup guide
 ├── INSTALLATION.txt              # Detailed installation
+├── OPENAI-GUIDE.md               # OpenAI configuration guide
+├── FINE-TUNING-GUIDE.md          # Fine-tuning & optimization
 ├── CHANGELOG.md                  # Version history
 └── .gitignore                    # Git ignore rules
 ```
