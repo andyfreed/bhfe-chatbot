@@ -40,6 +40,8 @@ Then activate the plugin in your WordPress admin panel and configure your API ke
 
 📖 For detailed installation instructions, see [INSTALLATION.txt](INSTALLATION.txt) or [QUICKSTART.md](QUICKSTART.md)
 
+🤖 **New to OpenAI?** Check out the [Complete OpenAI Configuration Guide](OPENAI-GUIDE.md) for detailed settings and best practices!
+
 ## Configuration
 
 ### 1. General Settings
