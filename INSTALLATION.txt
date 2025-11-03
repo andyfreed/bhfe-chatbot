@@ -1,0 +1,93 @@
+BHFE Course Chatbot - Installation Instructions
+================================================
+
+QUICK INSTALLATION
+------------------
+1. Upload the entire 'bhfe-chatbot' folder to /wp-content/plugins/
+2. Activate the plugin in WordPress admin under Plugins
+3. Go to Chatbot menu in WordPress admin
+4. Configure your API keys and settings
+5. The chatbot will appear on your website!
+
+DETAILED SETUP
+--------------
+
+Step 1: Get Your OpenAI API Key
+1. Visit https://platform.openai.com/
+2. Sign up or log in to your account
+3. Go to API Keys section
+4. Click "Create new secret key"
+5. Copy the key (you won't see it again)
+6. Paste it into the plugin settings
+
+Step 2: Get Your Dropbox Access Token
+1. Visit https://www.dropbox.com/developers/apps
+2. Click "Create app"
+3. Choose:
+   - API: Dropbox API
+   - Access level: Full Dropbox
+   - App name: Your choice
+4. Click "Create app"
+5. Under "Permissions", enable:
+   - Read content
+   - Read metadata
+6. Scroll to "OAuth 2" section
+7. Under "Generated access token", click "Generate"
+8. Copy the access token
+9. Paste it into plugin settings
+
+Step 3: Configure Dropbox Folder
+1. In your Dropbox, create a folder for course files (if needed)
+2. Note the exact path (e.g., /Course Files or /CPE Courses)
+3. Enter this path in the plugin settings
+4. Upload your course files to this folder
+
+Step 4: Add Business Information
+Write a clear description of:
+- What courses you offer
+- Who they're for (CFPs, CPAs, etc.)
+- Key topics covered
+- Any important details
+
+This helps the AI answer questions accurately.
+
+Step 5: Test the Chatbot
+1. Save your settings
+2. Visit your website
+3. Look for the chatbot icon in the corner
+4. Click it and ask a question!
+5. Try both general questions and course-specific ones
+
+TROUBLESHOOTING
+---------------
+
+Chatbot not showing:
+- Make sure "Enable Chatbot" is checked
+- Clear browser cache
+- Check browser console for errors
+
+API errors:
+- Verify your API keys are correct
+- Check OpenAI account has credits
+- Ensure Dropbox access token is valid
+- Check server can make HTTPS requests
+
+Poor responses:
+- Add more business description details
+- Use GPT-4 instead of GPT-3.5
+- Organize Dropbox files better
+- Use descriptive filenames
+
+SUPPORT
+-------
+If you need help, contact your plugin administrator or BHFE support.
+
+SECURITY NOTES
+--------------
+- Never share your API keys
+- Keep your WordPress installation updated
+- Use strong passwords
+- Regularly review API usage
+
+Need help? Check the README.md file for more detailed documentation.
+
