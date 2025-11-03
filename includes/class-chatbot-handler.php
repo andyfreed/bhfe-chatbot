@@ -12,6 +12,7 @@ class BHFE_Chatbot_Handler {
     
     private $openai;
     private $dropbox;
+    private $crawler;
     private $conversation_history;
     
     /**
@@ -20,6 +21,7 @@ class BHFE_Chatbot_Handler {
     public function __construct() {
         $this->openai = new BHFE_OpenAI_Integration();
         $this->dropbox = new BHFE_Dropbox_Integration();
+        $this->crawler = new BHFE_Website_Crawler();
         $this->conversation_history = array();
     }
     
@@ -31,10 +33,12 @@ class BHFE_Chatbot_Handler {
         $is_course_query = $this->is_course_related_query($user_message);
         
         $context_files = array();
+        $website_results = array();
         
-        // If it's a course query, search Dropbox for relevant files
+        // If it's a course query, search both Dropbox and website
         if ($is_course_query) {
             $context_files = $this->dropbox->search_files($user_message, 5);
+            $website_results = $this->crawler->search_pages($user_message, 5);
         }
         
         // Build conversation history
@@ -44,15 +48,15 @@ class BHFE_Chatbot_Handler {
             'content' => $user_message,
         );
         
-        // Get AI response
-        $ai_response = $this->openai->get_chat_completion($conversation, $context_files);
+        // Get AI response with both Dropbox and website context
+        $ai_response = $this->openai->get_chat_completion($conversation, $context_files, $website_results);
         
         // Update conversation history
         $this->add_to_conversation_history($user_message, $ai_response);
         
         return array(
             'message' => $ai_response,
-            'has_results' => !empty($context_files),
+            'has_results' => !empty($context_files) || !empty($website_results),
         );
     }
     

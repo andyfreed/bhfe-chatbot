@@ -171,6 +171,22 @@
     margin-bottom: 0;
 }
 
+/* Links */
+.bhfe-chatbot-message-content a {
+    color: #2563eb;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+
+.bhfe-chatbot-message-content a:hover {
+    opacity: 0.8;
+}
+
+.bhfe-chatbot-message.user .bhfe-chatbot-message-content a {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
 /* Typing Indicator */
 .bhfe-chatbot-typing {
     display: flex;

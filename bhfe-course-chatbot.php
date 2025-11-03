@@ -72,6 +72,7 @@ class BHFE_Course_Chatbot {
         // Load dependencies
         require_once BHFE_CHATBOT_PLUGIN_DIR . 'includes/class-dropbox-integration.php';
         require_once BHFE_CHATBOT_PLUGIN_DIR . 'includes/class-openai-integration.php';
+        require_once BHFE_CHATBOT_PLUGIN_DIR . 'includes/class-website-crawler.php';
         require_once BHFE_CHATBOT_PLUGIN_DIR . 'includes/class-chatbot-handler.php';
     }
     

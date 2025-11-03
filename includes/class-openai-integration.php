@@ -33,7 +33,7 @@ class BHFE_OpenAI_Integration {
     /**
      * Generate chat completion
      */
-    public function get_chat_completion($messages, $context_files = array()) {
+    public function get_chat_completion($messages, $context_files = array(), $website_results = array()) {
         if (empty($this->api_key)) {
             return 'I apologize, but the chatbot is not properly configured. Please contact support.';
         }
@@ -52,7 +52,21 @@ class BHFE_OpenAI_Integration {
             }
         }
         
-        $system_message .= "\n\nInstructions: Provide helpful, accurate information about the courses and business. If you reference a specific course file, be sure to mention it. Be professional but friendly.";
+        // Add website results if available
+        if (!empty($website_results)) {
+            $system_message .= "\n\nAvailable courses on the website:\n";
+            foreach ($website_results as $i => $page) {
+                $system_message .= sprintf(
+                    "%d. [%s](%s)\n   %s\n",
+                    $i + 1,
+                    $page['title'],
+                    $page['url'],
+                    $page['excerpt'] ?? ''
+                );
+            }
+        }
+        
+        $system_message .= "\n\nInstructions: Provide helpful, accurate information about the courses and business. When mentioning courses, ALWAYS include clickable links to website pages using markdown format like [Course Name](url). If you reference a specific course file, be sure to mention it. Be professional but friendly.";
         
         // Prepend system message to messages array
         array_unshift($messages, array(
