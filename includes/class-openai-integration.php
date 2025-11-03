@@ -12,6 +12,8 @@ class BHFE_OpenAI_Integration {
     
     private $api_key;
     private $model;
+    private $temperature;
+    private $max_tokens;
     
     /**
      * Constructor
@@ -20,6 +22,8 @@ class BHFE_OpenAI_Integration {
         $options = get_option('bhfe_chatbot_settings');
         $this->api_key = $options['openai_api_key'] ?? '';
         $this->model = $options['openai_model'] ?? 'gpt-4';
+        $this->temperature = isset($options['temperature']) ? floatval($options['temperature']) : 0.7;
+        $this->max_tokens = isset($options['max_tokens']) ? intval($options['max_tokens']) : 1000;
     }
     
     /**
@@ -55,8 +59,8 @@ class BHFE_OpenAI_Integration {
         $response = $this->api_request('/v1/chat/completions', array(
             'model' => $this->model,
             'messages' => $messages,
-            'temperature' => 0.7,
-            'max_tokens' => 1000,
+            'temperature' => $this->temperature,
+            'max_tokens' => $this->max_tokens,
         ));
         
         if (is_wp_error($response)) {

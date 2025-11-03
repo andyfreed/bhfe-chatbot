@@ -260,6 +260,46 @@ class BHFE_Course_Chatbot {
                 'description' => __('Describe your business, services, and course offerings for the AI context', 'bhfe-chatbot')
             )
         );
+        
+        // Advanced AI Settings section
+        add_settings_section(
+            'bhfe_chatbot_advanced_section',
+            __('Advanced AI Parameters', 'bhfe-chatbot'),
+            array($this, 'render_advanced_section_callback'),
+            'bhfe-chatbot'
+        );
+        
+        add_settings_field(
+            'temperature',
+            __('Temperature', 'bhfe-chatbot'),
+            array($this, 'render_number_field'),
+            'bhfe-chatbot',
+            'bhfe_chatbot_advanced_section',
+            array(
+                'label_for' => 'temperature',
+                'min' => '0',
+                'max' => '2',
+                'step' => '0.1',
+                'default' => '0.7',
+                'description' => __('Controls randomness: Lower = more consistent/focused, Higher = more creative (0.7 recommended)', 'bhfe-chatbot')
+            )
+        );
+        
+        add_settings_field(
+            'max_tokens',
+            __('Max Tokens', 'bhfe-chatbot'),
+            array($this, 'render_number_field'),
+            'bhfe-chatbot',
+            'bhfe_chatbot_advanced_section',
+            array(
+                'label_for' => 'max_tokens',
+                'min' => '100',
+                'max' => '4000',
+                'step' => '100',
+                'default' => '1000',
+                'description' => __('Maximum length of AI responses (1000 recommended)', 'bhfe-chatbot')
+            )
+        );
     }
     
     /**
@@ -283,6 +323,13 @@ class BHFE_Course_Chatbot {
         $sanitized['dropbox_folder'] = sanitize_text_field($input['dropbox_folder'] ?? '');
         $sanitized['business_description'] = sanitize_textarea_field($input['business_description'] ?? '');
         
+        // Advanced AI parameters
+        $temperature = floatval($input['temperature'] ?? 0.7);
+        $sanitized['temperature'] = max(0, min(2, $temperature)); // Clamp between 0 and 2
+        
+        $max_tokens = intval($input['max_tokens'] ?? 1000);
+        $sanitized['max_tokens'] = max(100, min(4000, $max_tokens)); // Clamp between 100 and 4000
+        
         return $sanitized;
     }
     
@@ -305,6 +352,13 @@ class BHFE_Course_Chatbot {
      */
     public function render_business_section_callback() {
         echo '<p>' . esc_html__('Provide information about your business and course offerings to help the chatbot answer questions accurately.', 'bhfe-chatbot') . '</p>';
+    }
+    
+    /**
+     * Render advanced section callback
+     */
+    public function render_advanced_section_callback() {
+        echo '<p>' . esc_html__('Fine-tune AI behavior and response characteristics. Leave default values unless you need to customize.', 'bhfe-chatbot') . '</p>';
     }
     
     /**
@@ -381,6 +435,21 @@ class BHFE_Course_Chatbot {
         $value = isset($options[$args['label_for']]) ? $options[$args['label_for']] : '';
         ?>
         <textarea id="<?php echo esc_attr($args['label_for']); ?>" name="bhfe_chatbot_settings[<?php echo esc_attr($args['label_for']); ?>]" rows="5" class="large-text"><?php echo esc_textarea($value); ?></textarea>
+        <p class="description"><?php echo esc_html($args['description']); ?></p>
+        <?php
+    }
+    
+    /**
+     * Render number field
+     */
+    public function render_number_field($args) {
+        $options = get_option('bhfe_chatbot_settings');
+        $value = isset($options[$args['label_for']]) ? $options[$args['label_for']] : ($args['default'] ?? '');
+        $min = $args['min'] ?? '0';
+        $max = $args['max'] ?? '100';
+        $step = $args['step'] ?? '1';
+        ?>
+        <input type="number" id="<?php echo esc_attr($args['label_for']); ?>" name="bhfe_chatbot_settings[<?php echo esc_attr($args['label_for']); ?>]" value="<?php echo esc_attr($value); ?>" min="<?php echo esc_attr($min); ?>" max="<?php echo esc_attr($max); ?>" step="<?php echo esc_attr($step); ?>" class="small-text">
         <p class="description"><?php echo esc_html($args['description']); ?></p>
         <?php
     }
