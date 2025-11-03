@@ -1,6 +1,12 @@
 # BHFE Course Chatbot WordPress Plugin
 
+[![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org/)
+[![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net/)
+[![License](https://img.shields.io/badge/License-GPL%20v2%2B-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
+
 A powerful AI-powered chatbot plugin for WordPress that helps customers search and find information about your CPE/CE courses. The chatbot integrates with OpenAI's API and your Dropbox course files to provide intelligent, context-aware responses.
+
+> Perfect for CFP, CPA, IRS enrolled agents, CDFA, IAR, and other professional training organizations.
 
 ## Features
 
@@ -12,11 +18,27 @@ A powerful AI-powered chatbot plugin for WordPress that helps customers search a
 - 📱 **Mobile Responsive** - Works beautifully on all devices
 - ⚡ **Fast & Lightweight** - Optimized for performance
 
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/andyfreed/bhfe-chatbot.git
+
+# Or download and unzip the plugin files to /wp-content/plugins/bhfe-chatbot/
+```
+
+Then activate the plugin in your WordPress admin panel and configure your API keys in **Chatbot Settings**.
+
 ## Installation
 
 1. Download or clone this repository
 2. Upload the entire `bhfe-chatbot` folder to your WordPress site's `/wp-content/plugins/` directory
 3. Activate the plugin through the 'Plugins' menu in WordPress
+4. Go to **Chatbot** in your WordPress admin menu
+5. Configure your OpenAI and Dropbox credentials
+6. Start chatting!
+
+📖 For detailed installation instructions, see [INSTALLATION.txt](INSTALLATION.txt) or [QUICKSTART.md](QUICKSTART.md)
 
 ## Configuration
 
@@ -149,7 +171,34 @@ For issues, questions, or feature requests, please contact BHFE support.
 
 GPL v2 or later
 
+## Repository Structure
+
+```
+bhfe-chatbot/
+├── bhfe-course-chatbot.php      # Main plugin file
+├── includes/                     # Core classes
+│   ├── class-dropbox-integration.php
+│   ├── class-openai-integration.php
+│   └── class-chatbot-handler.php
+├── assets/                       # Frontend resources
+│   ├── css/chatbot.css
+│   └── js/chatbot.js
+├── README.md                     # This file
+├── QUICKSTART.md                 # 5-minute setup guide
+├── INSTALLATION.txt              # Detailed installation
+├── CHANGELOG.md                  # Version history
+└── .gitignore                    # Git ignore rules
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
 ## Credits
 
 Developed for BHFE - Professional CPE/CE Course Provider
+
+---
+
+⭐ If you find this plugin useful, please consider giving it a star!
 
