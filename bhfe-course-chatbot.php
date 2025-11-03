@@ -209,9 +209,12 @@ class BHFE_Course_Chatbot {
             array(
                 'label_for' => 'openai_model',
                 'options' => array(
-                    'gpt-4' => 'GPT-4',
-                    'gpt-4-turbo-preview' => 'GPT-4 Turbo',
-                    'gpt-3.5-turbo' => 'GPT-3.5 Turbo'
+                    'gpt-4' => 'GPT-4 (Most Capable)',
+                    'gpt-4-turbo-preview' => 'GPT-4 Turbo (Recommended)',
+                    'gpt-4o' => 'GPT-4o (Latest & Fastest)',
+                    'gpt-3.5-turbo' => 'GPT-3.5 Turbo (Budget-Friendly)',
+                    'o1-preview' => 'O1 Preview (Advanced Reasoning)',
+                    'o1-mini' => 'O1 Mini (Fast Reasoning)'
                 ),
                 'description' => __('OpenAI model to use', 'bhfe-chatbot')
             )
@@ -300,6 +303,38 @@ class BHFE_Course_Chatbot {
                 'description' => __('Maximum length of AI responses (1000 recommended)', 'bhfe-chatbot')
             )
         );
+        
+        add_settings_field(
+            'frequency_penalty',
+            __('Frequency Penalty', 'bhfe-chatbot'),
+            array($this, 'render_number_field'),
+            'bhfe-chatbot',
+            'bhfe_chatbot_advanced_section',
+            array(
+                'label_for' => 'frequency_penalty',
+                'min' => '-2',
+                'max' => '2',
+                'step' => '0.1',
+                'default' => '0',
+                'description' => __('Reduce repetition: Positive = less repetitive, Negative = more repetitive', 'bhfe-chatbot')
+            )
+        );
+        
+        add_settings_field(
+            'presence_penalty',
+            __('Presence Penalty', 'bhfe-chatbot'),
+            array($this, 'render_number_field'),
+            'bhfe-chatbot',
+            'bhfe_chatbot_advanced_section',
+            array(
+                'label_for' => 'presence_penalty',
+                'min' => '-2',
+                'max' => '2',
+                'step' => '0.1',
+                'default' => '0',
+                'description' => __('Encourage diversity: Positive = more diverse topics, Negative = stick to topics', 'bhfe-chatbot')
+            )
+        );
     }
     
     /**
@@ -318,7 +353,7 @@ class BHFE_Course_Chatbot {
         $sanitized['position'] = sanitize_text_field($input['position'] ?? 'bottom-right');
         $sanitized['theme_color'] = sanitize_hex_color($input['theme_color'] ?? '#2563eb');
         $sanitized['openai_api_key'] = sanitize_text_field($input['openai_api_key'] ?? '');
-        $sanitized['openai_model'] = sanitize_text_field($input['openai_model'] ?? 'gpt-4');
+        $sanitized['openai_model'] = sanitize_text_field($input['openai_model'] ?? 'gpt-4-turbo-preview');
         $sanitized['dropbox_access_token'] = sanitize_text_field($input['dropbox_access_token'] ?? '');
         $sanitized['dropbox_folder'] = sanitize_text_field($input['dropbox_folder'] ?? '');
         $sanitized['business_description'] = sanitize_textarea_field($input['business_description'] ?? '');
@@ -329,6 +364,12 @@ class BHFE_Course_Chatbot {
         
         $max_tokens = intval($input['max_tokens'] ?? 1000);
         $sanitized['max_tokens'] = max(100, min(4000, $max_tokens)); // Clamp between 100 and 4000
+        
+        $frequency_penalty = floatval($input['frequency_penalty'] ?? 0);
+        $sanitized['frequency_penalty'] = max(-2, min(2, $frequency_penalty)); // Clamp between -2 and 2
+        
+        $presence_penalty = floatval($input['presence_penalty'] ?? 0);
+        $sanitized['presence_penalty'] = max(-2, min(2, $presence_penalty)); // Clamp between -2 and 2
         
         return $sanitized;
     }

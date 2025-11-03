@@ -14,6 +14,8 @@ class BHFE_OpenAI_Integration {
     private $model;
     private $temperature;
     private $max_tokens;
+    private $frequency_penalty;
+    private $presence_penalty;
     
     /**
      * Constructor
@@ -21,9 +23,11 @@ class BHFE_OpenAI_Integration {
     public function __construct() {
         $options = get_option('bhfe_chatbot_settings');
         $this->api_key = $options['openai_api_key'] ?? '';
-        $this->model = $options['openai_model'] ?? 'gpt-4';
+        $this->model = $options['openai_model'] ?? 'gpt-4-turbo-preview';
         $this->temperature = isset($options['temperature']) ? floatval($options['temperature']) : 0.7;
         $this->max_tokens = isset($options['max_tokens']) ? intval($options['max_tokens']) : 1000;
+        $this->frequency_penalty = isset($options['frequency_penalty']) ? floatval($options['frequency_penalty']) : 0;
+        $this->presence_penalty = isset($options['presence_penalty']) ? floatval($options['presence_penalty']) : 0;
     }
     
     /**
@@ -56,12 +60,24 @@ class BHFE_OpenAI_Integration {
             'content' => $system_message,
         ));
         
-        $response = $this->api_request('/v1/chat/completions', array(
+        // Build request parameters
+        $params = array(
             'model' => $this->model,
             'messages' => $messages,
             'temperature' => $this->temperature,
             'max_tokens' => $this->max_tokens,
-        ));
+        );
+        
+        // Add optional parameters if not default
+        if ($this->frequency_penalty != 0) {
+            $params['frequency_penalty'] = $this->frequency_penalty;
+        }
+        
+        if ($this->presence_penalty != 0) {
+            $params['presence_penalty'] = $this->presence_penalty;
+        }
+        
+        $response = $this->api_request('/v1/chat/completions', $params);
         
         if (is_wp_error($response)) {
             error_log('OpenAI API error: ' . $response->get_error_message());
