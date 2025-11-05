@@ -235,6 +235,14 @@
 
     // Set up event listeners
     setupEventListeners();
+    
+    // Enable input and send button after setup
+    setTimeout(() => {
+      const input = document.getElementById('chatbot-input');
+      const send = document.getElementById('chatbot-send');
+      if (input) input.disabled = false;
+      if (send) send.disabled = false;
+    }, 100);
   }
 
   // Set up event listeners
