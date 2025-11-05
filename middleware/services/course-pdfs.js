@@ -4,9 +4,6 @@ import { searchDropbox } from './dropbox.js';
 const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL;
 const WORDPRESS_API_SECRET = process.env.WORDPRESS_API_SECRET;
 
-const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL;
-const WORDPRESS_API_SECRET = process.env.WORDPRESS_API_SECRET;
-
 /**
  * Gets PDF files associated with a course
  * 
@@ -75,14 +72,6 @@ export async function getCoursePDFs(args) {
     }
 
     // Extract PDFs from course/product meta
-    const pdfs = extractPDFsFromMeta(courseData.data.meta || {});
-    return {
-      course_id,
-      course_title: courseData.data.name || courseData.data.title?.rendered || courseData.data.title,
-      pdfs: pdfs
-    };
-
-    // Extract PDFs from course meta
     const versionContent = courseData.data.meta?.flms_version_content || {};
     const pdfs = [];
 
