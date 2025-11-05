@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    {
+      "name": "bhfe-chatbot",
+      "path": "wordpress-plugin",
+      "mainFile": "bhfe-chatbot.php"
+    }
+  ]
+}
+

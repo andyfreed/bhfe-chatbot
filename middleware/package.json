@@ -1,0 +1,30 @@
+{
+  "name": "wordpress-chatbot-middleware",
+  "version": "1.0.0",
+  "description": "Middleware backend for WordPress AI chatbot using OpenAI Assistants API",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "create-assistant": "node scripts/create-assistant.js"
+  },
+  "keywords": [
+    "openai",
+    "assistants",
+    "chatbot",
+    "wordpress",
+    "dropbox"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "openai": "^4.20.1",
+    "dropbox": "^10.34.0",
+    "axios": "^1.6.2"
+  }
+}
+

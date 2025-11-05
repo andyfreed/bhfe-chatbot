@@ -2,65 +2,118 @@
 
 Get your chatbot up and running in 5 minutes!
 
-## Step 1: Install the Plugin
+## 🚀 Quick Setup
 
-1. Upload the `bhfe-chatbot` folder to `/wp-content/plugins/`
-2. Go to WordPress Admin → Plugins
-3. Find "BHFE Course Chatbot" and click "Activate"
+### 1. Install Dependencies
 
-## Step 2: Get Your API Keys
-
-### OpenAI API Key (Required)
-1. Go to https://platform.openai.com/api-keys
-2. Click "Create new secret key"
-3. Copy the key
-
-### Dropbox Access Token (Required)
-1. Go to https://www.dropbox.com/developers/apps
-2. Create app → "Full Dropbox" access
-3. Generate access token
-4. Copy the token
-
-## Step 3: Configure Settings
-
-1. Go to WordPress Admin → Chatbot
-2. Fill in:
-   - ✅ **Enable Chatbot** - Check the box
-   - **OpenAI API Key** - Paste from Step 2
-   - **Dropbox Access Token** - Paste from Step 2
-   - **Dropbox Folder Path** - e.g., `/Course Files`
-3. **Business Description** - Write a few sentences about your courses
-4. Click "Save Settings"
-
-## Step 4: Test It!
-
-1. Visit your website
-2. Look for the chat icon in the bottom-right corner
-3. Click it and ask: "What courses do you have for CPAs?"
-4. Watch the magic happen! 🎉
-
-## Example Business Description
-
-```
-BHFE provides CPE and CE courses for CFPs, CPAs, IRS enrolled agents, CDFAs, and IARs. 
-We cover topics like tax planning, retirement planning, estate planning, ethics, and compliance. 
-All courses are approved and feature expert instructors.
+```bash
+cd middleware
+npm install
 ```
 
-## Common Issues
+### 2. Set Up Environment Variables
 
-**Chatbot not showing?**
-- Make sure "Enable Chatbot" is checked
-- Clear your browser cache
+Copy the example file:
 
-**Getting errors?**
-- Verify your API keys are correct
-- Check if OpenAI account has credits
-- Ensure Dropbox token is valid
+```bash
+cp env.example .env
+```
 
-**Need more help?**
-- Read the full README.md
-- Check INSTALLATION.txt for detailed steps
+Edit `.env` and add your credentials:
 
-That's it! Your chatbot is ready to help your customers find the perfect course.
+```env
+OPENAI_API_KEY=sk-...
+OPENAI_ASSISTANT_ID=asst_...
+DROPBOX_ACCESS_TOKEN=...
+WORDPRESS_API_URL=https://your-site.com/wp-json
+WORDPRESS_API_SECRET=...
+```
+
+### 3. Create Your Assistant
+
+Run the helper script:
+
+```bash
+npm run create-assistant
+```
+
+This will create your assistant and print the Assistant ID. Copy it to your `.env` file.
+
+### 4. Get Your Credentials
+
+#### OpenAI API Key
+- Go to https://platform.openai.com/api-keys
+- Create a new API key
+- Copy to `OPENAI_API_KEY` in `.env`
+
+#### Dropbox Access Token
+- Go to https://www.dropbox.com/developers/apps
+- Create a new app
+- Generate an access token
+- Copy to `DROPBOX_ACCESS_TOKEN` in `.env`
+
+#### WordPress API Secret
+- Go to WordPress Admin → Users → Your Profile
+- Scroll to "Application Passwords"
+- Create a new application password
+- Use format: `username:password` in `WORDPRESS_API_SECRET`
+
+### 5. Start the Server
+
+```bash
+npm start
+```
+
+You should see:
+```
+🚀 Middleware server running on port 3000
+```
+
+### 6. Add Widget to WordPress
+
+1. Upload `frontend/chat-widget.js` to your theme directory
+2. Add this to your theme's `footer.php` (before `</body>`):
+
+```php
+<script>
+  const CHATBOT_MIDDLEWARE_URL = 'http://localhost:3000'; // Change to your deployed URL
+</script>
+<script src="<?php echo get_template_directory_uri(); ?>/chat-widget.js"></script>
+```
+
+### 7. Test It!
+
+1. Visit your WordPress site
+2. Click the chat bubble in the bottom-right corner
+3. Type a message like: "Search Dropbox for my presentation"
+4. The assistant should respond!
+
+## 🐛 Troubleshooting
+
+**"Assistant not found"**
+- Make sure `OPENAI_ASSISTANT_ID` is correct
+- Run `npm run create-assistant` again
+
+**"Dropbox search failed"**
+- Check that `DROPBOX_ACCESS_TOKEN` is valid
+- Regenerate token in Dropbox app settings
+
+**"WordPress API error"**
+- Verify `WORDPRESS_API_URL` is correct
+- Check that `WORDPRESS_API_SECRET` is valid
+- Make sure WordPress REST API is enabled
+
+**Widget not appearing**
+- Check browser console for errors
+- Verify `CHATBOT_MIDDLEWARE_URL` is set correctly
+- Make sure the script is loaded (check Network tab)
+
+## 📚 Next Steps
+
+- Deploy to production (see main README.md)
+- Customize the assistant's instructions
+- Add more functions
+- Style the widget
+
+For more details, see the main [README.md](README.md).
 

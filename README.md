@@ -1,208 +1,386 @@
-# BHFE Course Chatbot WordPress Plugin
+# WordPress AI Chatbot with OpenAI Assistants API
 
-[![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue.svg)](https://wordpress.org/)
-[![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net/)
-[![License](https://img.shields.io/badge/License-GPL%20v2%2B-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
+A complete AI chatbot solution for WordPress that uses OpenAI's Assistants API, with integrations for Dropbox file search and WordPress REST API data retrieval.
 
-A powerful AI-powered chatbot plugin for WordPress that helps customers search and find information about your CPE/CE courses. The chatbot integrates with OpenAI's API and your Dropbox course files to provide intelligent, context-aware responses.
+## 📋 Table of Contents
 
-> Perfect for CFP, CPA, IRS enrolled agents, CDFA, IAR, and other professional training organizations.
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Setup Instructions](#setup-instructions)
+- [OpenAI Assistant Configuration](#openai-assistant-configuration)
+- [Deployment](#deployment)
+- [Usage](#usage)
+- [Troubleshooting](#troubleshooting)
 
-## Features
+## 🎯 Overview
 
-- 🤖 **AI-Powered Responses** - Uses OpenAI GPT models for natural conversation
-- 📁 **Dropbox Integration** - Searches through your course files to find relevant information
-- 🎯 **Smart Course Matching** - Automatically detects course-related queries and searches your library
-- 💬 **Conversational History** - Maintains context throughout the conversation
-- 🎨 **Customizable Design** - Configurable colors and positioning
-- 📱 **Mobile Responsive** - Works beautifully on all devices
-- ⚡ **Fast & Lightweight** - Optimized for performance
+This project consists of:
 
-## Quick Start
+1. **Middleware Backend** (Node.js/Express) - A secure server that:
+   - Holds your API keys and credentials
+   - Connects to OpenAI Assistants API
+   - Handles function calls to Dropbox and WordPress
+   - Provides a `/chat` endpoint for the frontend
 
-```bash
-# Clone the repository
-git clone https://github.com/andyfreed/bhfe-chatbot.git
+2. **Frontend Widget** - A JavaScript chat widget that:
+   - Embeds in your WordPress site
+   - Sends messages to the middleware
+   - Displays streaming responses from the assistant
 
-# Or download and unzip the plugin files to /wp-content/plugins/bhfe-chatbot/
+## 🏗️ Architecture
+
+```
+WordPress Site (Frontend)
+    ↓ POST /chat
+Middleware Server (Node.js/Express)
+    ↓
+OpenAI Assistants API
+    ↓ (function calls)
+Dropbox API / WordPress REST API
 ```
 
-Then activate the plugin in your WordPress admin panel and configure your API keys in **Chatbot Settings**.
+**Why this architecture?**
+- **Security**: API keys stay on the server, never exposed to the browser
+- **Flexibility**: Easy to add more integrations (databases, APIs, etc.)
+- **Scalability**: Can handle multiple WordPress sites
+- **Control**: Full control over function calling logic
 
-## Installation
+## 🚀 Setup Instructions
 
-1. Download or clone this repository
-2. Upload the entire `bhfe-chatbot` folder to your WordPress site's `/wp-content/plugins/` directory
-3. Activate the plugin through the 'Plugins' menu in WordPress
-4. Go to **Chatbot** in your WordPress admin menu
-5. Configure your OpenAI and Dropbox credentials
-6. Start chatting!
+### Prerequisites
 
-📖 For detailed installation instructions, see [INSTALLATION.txt](INSTALLATION.txt) or [QUICKSTART.md](QUICKSTART.md)
+- Node.js 18+ installed
+- OpenAI API key
+- Dropbox access token
+- WordPress site with REST API enabled
+- A place to host the middleware (Render, Fly.io, Vercel, etc.)
 
-🤖 **New to OpenAI?** Check out the [Complete OpenAI Configuration Guide](OPENAI-GUIDE.md) for detailed settings and best practices!
+### Step 1: Clone/Download the Project
 
-## Configuration
+```bash
+cd bhfe-chatbot
+```
 
-### 1. General Settings
+### Step 2: Install Dependencies
 
-Navigate to **Chatbot** in your WordPress admin menu and configure:
+```bash
+cd middleware
+npm install
+```
 
-- **Enable Chatbot** - Turn the chatbot on/off
-- **Chatbot Title** - Customize the header text
-- **Chatbot Position** - Choose from bottom-right, bottom-left, top-right, or top-left
-- **Theme Color** - Set your brand color
+### Step 3: Configure Environment Variables
 
-### 2. API Settings
+Copy the example environment file:
 
-#### OpenAI API Key
+```bash
+cp .env.example .env
+```
 
-1. Sign up for an OpenAI account at https://platform.openai.com/
-2. Navigate to API Keys section
-3. Create a new API key
-4. Paste it into the **OpenAI API Key** field in plugin settings
+Edit `.env` and fill in your credentials:
 
-#### OpenAI Model
+```env
+# OpenAI Configuration
+OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENAI_ASSISTANT_ID=asst_xxxxxxxxxxxxx
 
-Choose from available GPT models:
-- GPT-4 (Recommended, most capable)
-- GPT-4 Turbo (Faster, still highly capable)
-- GPT-3.5 Turbo (Budget-friendly)
+# Dropbox Configuration
+DROPBOX_ACCESS_TOKEN=your-dropbox-access-token-here
+
+# WordPress Configuration
+WORDPRESS_API_URL=https://your-site.com/wp-json
+WORDPRESS_API_SECRET=your-wordpress-api-secret-here
+
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+```
+
+### Step 4: Get Your Credentials
+
+#### OpenAI API Key & Assistant ID
+
+1. Go to https://platform.openai.com/api-keys
+2. Create a new API key
+3. Copy it to `OPENAI_API_KEY` in `.env`
+4. Create an Assistant (see [OpenAI Assistant Configuration](#openai-assistant-configuration) below)
+   - **Option A**: Use the helper script (recommended): `npm run create-assistant`
+   - **Option B**: Create manually in OpenAI dashboard
+5. Copy the Assistant ID to `OPENAI_ASSISTANT_ID` in `.env`
 
 #### Dropbox Access Token
 
 1. Go to https://www.dropbox.com/developers/apps
-2. Create a new app or use an existing one
-3. Generate an access token with read permissions
-4. Paste it into the **Dropbox Access Token** field
+2. Create a new app (choose "Scoped access" → "Full Dropbox")
+3. Generate an access token
+4. Copy it to `DROPBOX_ACCESS_TOKEN` in `.env`
 
-#### Dropbox Folder Path
+#### WordPress API Secret
 
-Enter the path to your course files folder in Dropbox (e.g., `/Course Files` or `/CPE Courses`)
+You'll need to set up authentication for your WordPress REST API. Options:
 
-### 3. Business Information
+**Option A: Application Password (Recommended)**
+1. Go to WordPress Admin → Users → Your Profile
+2. Scroll to "Application Passwords"
+3. Create a new application password
+4. Use it as `WORDPRESS_API_SECRET` in `.env`
+5. Format: `username:password` (e.g., `admin:xxxx xxxx xxxx xxxx`)
 
-Add a detailed description of your business, services, and course offerings. This helps the AI provide more accurate and contextual responses to general questions.
+**Option B: Custom Authentication Plugin**
+- Install a plugin like "Application Passwords" or "JWT Authentication"
+- Configure it to use a bearer token
+- Use that token in `WORDPRESS_API_SECRET`
 
-Example:
-```
-BHFE provides comprehensive online CPE (Continuing Professional Education) and CE (Continuing Education) courses for financial professionals including CFPs, CPAs, IRS enrolled agents, CDFAs, IARs, and more. Our course library covers topics including tax planning, retirement planning, estate planning, ethics, and regulatory compliance. All courses are approved by relevant certifying bodies and feature expert instructors with decades of experience.
-```
+**Option C: Basic Auth (Development Only)**
+- For local testing only, you can use basic auth
+- Format: `username:password` (base64 encoded)
+- **Never use this in production!**
 
-## How It Works
+### Step 5: Test Locally
 
-### Course Queries
-
-When a user asks a question about courses, the chatbot:
-
-1. Identifies it as a course-related query using smart keyword detection
-2. Searches your Dropbox folder for relevant course files
-3. Extracts content from the most relevant files
-4. Sends the context to OpenAI along with the user's question
-5. Returns a helpful response that may reference specific courses
-
-### General Queries
-
-For non-course questions, the chatbot:
-
-1. Uses your business information as context
-2. Answers based on general knowledge about your industry
-3. Can discuss pricing, support, certifications, etc.
-
-## Supported File Types
-
-The chatbot can search for files in Dropbox and extract text from:
-- PDF files (Dropbox API returns raw PDF, may need preprocessing)
-- Text files (.txt, .md, .csv)
-- Word documents (.doc, .docx)
-- HTML/XML files
-- Other text-based formats
-
-Note: For best results with PDFs and Word docs, consider pre-converting to plain text or using a text extraction service. The plugin will attempt to read file contents but binary-formatted PDFs may not parse correctly through Dropbox's API.
-
-Binary files will be recognized but their content won't be searchable.
-
-## Requirements
-
-- WordPress 5.0 or higher
-- PHP 7.4 or higher
-- Active internet connection (for API calls)
-- OpenAI API account
-- Dropbox account with API access
-
-## Security
-
-- All API keys are stored securely in WordPress database
-- AJAX requests are protected with nonces
-- User data is only stored in session transients (expires after 1 hour)
-- No sensitive data is stored long-term
-
-## Troubleshooting
-
-### Chatbot not appearing
-
-- Ensure "Enable Chatbot" is checked in settings
-- Clear your browser cache
-- Check for JavaScript errors in browser console
-
-### "I encountered an error" responses
-
-- Verify your OpenAI API key is correct and has credits
-- Check your API quota/billing status
-- Review PHP error logs
-
-### Dropbox searches not working
-
-- Verify Dropbox access token is valid
-- Ensure the folder path is correct (include leading /)
-- Check that your Dropbox app has read permissions
-- Verify files exist in the specified folder
-
-### Poor response quality
-
-- Add more detailed business description
-- Organize your Dropbox files with descriptive names
-- Consider switching to GPT-4 for better understanding
-- Increase the number of context files retrieved
-
-## Support
-
-For issues, questions, or feature requests, please contact BHFE support.
-
-## License
-
-GPL v2 or later
-
-## Repository Structure
-
-```
-bhfe-chatbot/
-├── bhfe-course-chatbot.php      # Main plugin file
-├── includes/                     # Core classes
-│   ├── class-dropbox-integration.php
-│   ├── class-openai-integration.php
-│   └── class-chatbot-handler.php
-├── assets/                       # Frontend resources
-│   ├── css/chatbot.css
-│   └── js/chatbot.js
-├── README.md                     # This file
-├── QUICKSTART.md                 # 5-minute setup guide
-├── INSTALLATION.txt              # Detailed installation
-├── OPENAI-GUIDE.md               # OpenAI configuration guide
-├── FINE-TUNING-GUIDE.md          # Fine-tuning & optimization
-├── CHANGELOG.md                  # Version history
-└── .gitignore                    # Git ignore rules
+```bash
+npm start
 ```
 
-## Contributing
+You should see:
+```
+🚀 Middleware server running on port 3000
+📡 Health check: http://localhost:3000/health
+💬 Chat endpoint: http://localhost:3000/chat
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Test the health endpoint:
+```bash
+curl http://localhost:3000/health
+```
 
-## Credits
+### Step 6: Add Frontend Widget to WordPress
 
-Developed for BHFE - Professional CPE/CE Course Provider
+1. Upload `frontend/chat-widget.js` to your WordPress theme directory (e.g., `/wp-content/themes/your-theme/`)
+2. Add this to your theme's `footer.php` (before `</body>`) or use a plugin like "Insert Headers and Footers":
+
+```php
+<script>
+  const CHATBOT_MIDDLEWARE_URL = 'https://your-middleware-url.com';
+</script>
+<script src="<?php echo get_template_directory_uri(); ?>/chat-widget.js"></script>
+```
+
+**Important**: Replace `https://your-middleware-url.com` with your actual middleware server URL.
+
+## 🤖 OpenAI Assistant Configuration
+
+### Creating the Assistant
+
+**Option A: Using the Helper Script (Recommended)**
+
+1. Make sure your `.env` file has `OPENAI_API_KEY` set
+2. Run: `npm run create-assistant`
+3. Copy the Assistant ID that's printed to your `.env` file
+
+**Option B: Manual Creation in Dashboard**
+
+1. Go to https://platform.openai.com/assistants
+2. Click "Create" → "Assistant"
+3. Configure:
+
+   **Name**: "WordPress Chatbot" (or your choice)
+
+   **Model**: `gpt-4-turbo-preview` or `gpt-3.5-turbo` (gpt-4 is better but costs more)
+
+   **Instructions**: 
+   ```
+   You are a helpful AI assistant for a WordPress website. 
+   You can help users by:
+   - Searching for files in Dropbox
+   - Retrieving data from the WordPress REST API
+   
+   Always be friendly and helpful. If you don't know something, say so.
+   ```
+
+   **Tools**: 
+   - ✅ Functions (this will be added automatically by the code)
+   - ✅ Code Interpreter (optional, for file analysis)
+   - ✅ File Search (optional, for uploaded files)
+
+4. Click "Save"
+5. Copy the Assistant ID (starts with `asst_`) to your `.env` file
+
+### Updating System Instructions
+
+You can change the assistant's behavior by:
+1. Editing the instructions in the OpenAI dashboard, OR
+2. Modifying the instructions when creating the assistant in code (see `services/openai.js`)
+
+### Function Calling
+
+The assistant automatically has access to:
+- `searchDropbox(query)` - Searches Dropbox for files
+- `getWordPressData(endpoint, params)` - Fetches WordPress data
+
+These are defined in `services/openai.js` in the `functionDefinitions` array.
+
+## 🚢 Deployment
+
+### Option 1: Render (Recommended for Beginners)
+
+1. Create account at https://render.com
+2. Click "New" → "Web Service"
+3. Connect your GitHub repo (or push code to GitHub first)
+4. Configure:
+   - **Name**: `wordpress-chatbot-middleware`
+   - **Environment**: `Node`
+   - **Build Command**: `cd middleware && npm install`
+   - **Start Command**: `cd middleware && npm start`
+5. Add environment variables in the dashboard
+6. Deploy!
+
+**Note**: On Render, set `PORT` to use the environment variable they provide (usually automatically handled).
+
+### Option 2: Fly.io
+
+1. Install Fly CLI: `curl -L https://fly.io/install.sh | sh`
+2. In the `middleware` directory, run: `fly launch`
+3. Follow prompts
+4. Set secrets: `fly secrets set OPENAI_API_KEY=xxx OPENAI_ASSISTANT_ID=xxx ...`
+5. Deploy: `fly deploy`
+
+### Option 3: Vercel
+
+1. Install Vercel CLI: `npm i -g vercel`
+2. In `middleware` directory, run: `vercel`
+3. Add environment variables in Vercel dashboard
+4. Deploy: `vercel --prod`
+
+**Note**: Vercel is serverless, so you may need to adjust for streaming. Consider using Render or Fly.io for better streaming support.
+
+### Option 4: Your Own Server
+
+1. Set up a Node.js server (Ubuntu, DigitalOcean, AWS, etc.)
+2. Install Node.js 18+
+3. Clone the repo
+4. Run `npm install` in the `middleware` directory
+5. Set up environment variables
+6. Use PM2 to keep it running: `pm2 start index.js`
+7. Set up nginx reverse proxy (optional)
+
+### CORS Configuration
+
+If your WordPress site is on a different domain than the middleware, you may need to update CORS in `middleware/index.js`:
+
+```javascript
+app.use(cors({
+  origin: 'https://your-wordpress-site.com',
+  credentials: true
+}));
+```
+
+## 💬 Usage
+
+### Testing the Chat Endpoint
+
+```bash
+curl -X POST http://localhost:3000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello, can you search Dropbox for my presentation?"}'
+```
+
+### Using the Widget
+
+1. Visit your WordPress site
+2. Click the chat bubble in the bottom-right corner
+3. Type a message and press Enter
+4. The assistant will respond, potentially using function calls to fetch data
+
+### Example Conversations
+
+**User**: "Search Dropbox for my budget files"
+- Assistant calls `searchDropbox("budget")`
+- Returns matching files
+
+**User**: "What are my latest blog posts?"
+- Assistant calls `getWordPressData("/wp/v2/posts", {per_page: 5})`
+- Returns recent posts
+
+## 🔧 Troubleshooting
+
+### "Assistant not found" error
+
+- Check that `OPENAI_ASSISTANT_ID` is correct in `.env`
+- Make sure the assistant exists in your OpenAI account
+
+### "Dropbox search failed"
+
+- Verify `DROPBOX_ACCESS_TOKEN` is valid
+- Check that the token has the right permissions
+- Token might have expired (regenerate in Dropbox app settings)
+
+### "WordPress API error"
+
+- Verify `WORDPRESS_API_URL` is correct
+- Check that `WORDPRESS_API_SECRET` is valid
+- Ensure WordPress REST API is enabled
+- Check if your WordPress site requires authentication for REST API
+
+### Widget not appearing
+
+- Check browser console for errors
+- Verify `CHATBOT_MIDDLEWARE_URL` is set correctly
+- Make sure the script is loaded (check Network tab)
+- Check CORS settings if middleware is on different domain
+
+### Streaming not working
+
+- Some hosting providers don't support streaming well
+- Try Render or Fly.io instead of Vercel
+- Check that `Accept: text/event-stream` header is sent
+
+### Function calls not working
+
+- Check server logs for errors
+- Verify function names match in `availableFunctions` and `functionDefinitions`
+- Check OpenAI dashboard to see if assistant has function calling enabled
+
+## 📝 Customization
+
+### Adding More Functions
+
+1. Create a new function in `services/` (e.g., `services/database.js`)
+2. Add it to `availableFunctions` in `services/openai.js`
+3. Add function definition to `functionDefinitions` array
+4. The assistant will automatically be able to call it!
+
+### Changing the Assistant's Behavior
+
+Edit the system instructions in the OpenAI dashboard, or modify them when creating the assistant in code.
+
+### Styling the Widget
+
+Edit the CSS in `frontend/chat-widget.js` (look for the `style.textContent` section).
+
+## 🔒 Security Best Practices
+
+1. **Never commit `.env` to git** - It's already in `.gitignore`
+2. **Use HTTPS in production** - Always use SSL/TLS
+3. **Rotate API keys regularly**
+4. **Limit API key permissions** - Use least privilege
+5. **Monitor usage** - Check OpenAI dashboard for unexpected costs
+6. **Rate limiting** - Consider adding rate limiting to prevent abuse (not included by default)
+
+## 📚 Additional Resources
+
+- [OpenAI Assistants API Docs](https://platform.openai.com/docs/assistants)
+- [Dropbox API Docs](https://www.dropbox.com/developers/documentation)
+- [WordPress REST API Handbook](https://developer.wordpress.org/rest-api/)
+
+## 🆘 Support
+
+If you encounter issues:
+1. Check the troubleshooting section above
+2. Review server logs for errors
+3. Check OpenAI dashboard for API errors
+4. Verify all environment variables are set correctly
 
 ---
 
-⭐ If you find this plugin useful, please consider giving it a star!
+**Built with ❤️ for WordPress users**
 
