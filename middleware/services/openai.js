@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { searchDropbox } from './dropbox.js';
 import { getWordPressData } from './wordpress.js';
 import { searchCourses } from './courses.js';
+import { getCoursePDFs, searchCoursePDFs } from './course-pdfs.js';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -17,7 +18,9 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID;
 const availableFunctions = {
   searchDropbox: searchDropbox,
   getWordPressData: getWordPressData,
-  searchCourses: searchCourses
+  searchCourses: searchCourses,
+  getCoursePDFs: getCoursePDFs,
+  searchCoursePDFs: searchCoursePDFs
 };
 
 /**
@@ -70,6 +73,38 @@ const functionDefinitions = [
         per_page: {
           type: 'number',
           description: 'Number of courses to return (default: 20, max recommended: 50)'
+        }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'getCoursePDFs',
+    description: 'Gets PDF files associated with a course. Each course typically has an "About" PDF (table of contents) and a full course PDF (available after purchase). Use this when users ask about course materials, PDFs, or what a course covers.',
+    parameters: {
+      type: 'object',
+      properties: {
+        course_id: {
+          type: 'number',
+          description: 'The course ID (get this from searchCourses results)'
+        }
+      },
+      required: ['course_id']
+    }
+  },
+  {
+    name: 'searchCoursePDFs',
+    description: 'Searches PDF files in Dropbox to find courses that cover a specific topic. Use this when users want to find courses by content (e.g., "find courses about divorce taxation" or "what courses cover retirement planning"). This searches the actual PDF content to help users find courses.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'What to search for in PDFs (e.g., "divorce taxation", "retirement planning", "estate tax")'
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of courses to check (default: 10)'
         }
       },
       required: ['query']

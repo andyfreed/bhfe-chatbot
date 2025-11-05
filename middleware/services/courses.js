@@ -24,8 +24,10 @@ export async function searchCourses(args) {
 
     console.log(`Searching for active courses: "${query}"`);
 
-    // Build the URL for WordPress REST API
-    const url = `${WORDPRESS_API_URL}/wp/v2/flms-courses`;
+    // Try multiple endpoints - custom post types might not have REST API registered
+    // Try WooCommerce products first, then custom post type
+    let url = `${WORDPRESS_API_URL}/wp/v2/products`;
+    let triedCustomEndpoint = false;
 
     // Parse WordPress API secret (format: username:password or just token)
     let authHeader;
@@ -38,33 +40,62 @@ export async function searchCourses(args) {
       authHeader = `Bearer ${WORDPRESS_API_SECRET}`;
     }
 
-    // Make the request with authentication
-    const response = await axios.get(url, {
-      params: {
-        search: query,
-        per_page: per_page,
-        status: 'publish',
-        _embed: true // Include embedded data like featured images
-      },
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json'
-      },
-      timeout: 10000
-    });
+    // Make the request - try WooCommerce products first
+    let response;
+    try {
+      response = await axios.get(url, {
+        params: {
+          search: query,
+          per_page: per_page,
+          status: 'publish',
+          _embed: true
+        },
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000
+      });
+    } catch (error) {
+      // If products endpoint fails, try custom post type
+      if (error.response?.status === 404 || error.response?.status === 403) {
+        triedCustomEndpoint = true;
+        url = `${WORDPRESS_API_URL}/wp/v2/flms-courses`;
+        response = await axios.get(url, {
+          params: {
+            search: query,
+            per_page: per_page,
+            status: 'publish',
+            _embed: true
+          },
+          headers: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
+        });
+      } else {
+        throw error;
+      }
+    }
 
-    // Format the results
+    // Format the results - handle both WooCommerce products and custom post types
     const courses = response.data.map(course => {
+      // Check if this is a WooCommerce product or custom post type
+      const isProduct = course.type === 'product' || course.product_type;
+      
       return {
         id: course.id,
-        title: course.title?.rendered || course.title,
+        title: course.title?.rendered || course.title?.raw || course.name || course.title,
         slug: course.slug,
-        link: course.link,
-        excerpt: course.excerpt?.rendered || course.excerpt,
-        date: course.date,
-        modified: course.modified,
-        featured_image: course._embedded?.['wp:featuredmedia']?.[0]?.source_url || null,
-        meta: course.meta || {}
+        link: course.link || course.permalink,
+        excerpt: course.excerpt?.rendered || course.excerpt?.raw || course.short_description || course.excerpt,
+        date: course.date || course.date_created,
+        modified: course.modified || course.date_modified,
+        featured_image: course._embedded?.['wp:featuredmedia']?.[0]?.source_url || course.images?.[0]?.src || null,
+        meta: course.meta || {},
+        type: isProduct ? 'product' : 'course',
+        price: course.price || course.price_html || null
       };
     });
 
