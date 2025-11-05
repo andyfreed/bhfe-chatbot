@@ -29,11 +29,22 @@ export async function getWordPressData(args) {
 
     console.log(`Fetching WordPress data from: ${url}`);
 
+    // Parse WordPress API secret (format: username:password or just token)
+    let authHeader;
+    if (WORDPRESS_API_SECRET.includes(':')) {
+      // Application password format: username:password
+      const credentials = Buffer.from(WORDPRESS_API_SECRET).toString('base64');
+      authHeader = `Basic ${credentials}`;
+    } else {
+      // Bearer token format
+      authHeader = `Bearer ${WORDPRESS_API_SECRET}`;
+    }
+
     // Make the request with authentication
     const response = await axios.get(url, {
       params: params,
       headers: {
-        'Authorization': `Bearer ${WORDPRESS_API_SECRET}`,
+        'Authorization': authHeader,
         'Content-Type': 'application/json'
       },
       timeout: 10000 // 10 second timeout

@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { searchDropbox } from './dropbox.js';
 import { getWordPressData } from './wordpress.js';
+import { searchCourses } from './courses.js';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -15,7 +16,8 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID;
  */
 const availableFunctions = {
   searchDropbox: searchDropbox,
-  getWordPressData: getWordPressData
+  getWordPressData: getWordPressData,
+  searchCourses: searchCourses
 };
 
 /**
@@ -53,6 +55,24 @@ const functionDefinitions = [
         }
       },
       required: ['endpoint']
+    }
+  },
+  {
+    name: 'searchCourses',
+    description: 'Searches for active CPE/CE courses on the BHFE website. Use this when users ask about courses, want to find courses by topic, or are looking for specific course types. Only returns active courses (approximately 400 active courses available).',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'The search query to find courses (e.g., "ethics", "tax planning", "CFP", "CPA", "divorce")'
+        },
+        per_page: {
+          type: 'number',
+          description: 'Number of courses to return (default: 20, max recommended: 50)'
+        }
+      },
+      required: ['query']
     }
   }
 ];
