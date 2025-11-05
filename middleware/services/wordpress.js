@@ -33,7 +33,11 @@ export async function getWordPressData(args) {
     let authHeader;
     if (WORDPRESS_API_SECRET.includes(':')) {
       // Application password format: username:password
-      const credentials = Buffer.from(WORDPRESS_API_SECRET).toString('base64');
+      // WordPress Application Passwords are displayed with spaces (e.g., "xxxx xxxx xxxx xxxx")
+      // but spaces should be removed when using them in Basic auth
+      const [username, ...passwordParts] = WORDPRESS_API_SECRET.split(':');
+      const password = passwordParts.join(':').replace(/\s+/g, ''); // Remove all spaces from password
+      const credentials = Buffer.from(`${username}:${password}`, 'utf8').toString('base64');
       authHeader = `Basic ${credentials}`;
     } else {
       // Bearer token format

@@ -1,6 +1,8 @@
 import axios from 'axios';
-import { getWordPressData } from './wordpress.js';
 import { searchDropbox } from './dropbox.js';
+
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL;
+const WORDPRESS_API_SECRET = process.env.WORDPRESS_API_SECRET;
 
 const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL;
 const WORDPRESS_API_SECRET = process.env.WORDPRESS_API_SECRET;
@@ -24,34 +26,61 @@ export async function getCoursePDFs(args) {
 
     console.log(`Getting PDFs for course ID: ${course_id}`);
 
-    // Get course details including meta data
-    const courseData = await getWordPressData({
-      endpoint: `/wp/v2/flms-courses/${course_id}`,
-      params: {}
-    });
+    // Parse WordPress API secret for direct API calls
+    let authHeader;
+    if (WORDPRESS_API_SECRET.includes(':')) {
+      const [username, ...passwordParts] = WORDPRESS_API_SECRET.split(':');
+      const password = passwordParts.join(':').replace(/\s+/g, '');
+      const credentials = Buffer.from(`${username}:${password}`, 'utf8').toString('base64');
+      authHeader = `Basic ${credentials}`;
+    } else {
+      authHeader = `Bearer ${WORDPRESS_API_SECRET}`;
+    }
+
+    // Get course details including meta data - try WooCommerce products first
+    let courseData;
+    let url = `${WORDPRESS_API_URL}/wp/v2/products/${course_id}`;
+    
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000
+      });
+      courseData = { data: response.data, error: null };
+    } catch (error) {
+      // Try custom post type
+      url = `${WORDPRESS_API_URL}/wp/v2/flms-courses/${course_id}`;
+      try {
+        const response = await axios.get(url, {
+          headers: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
+        });
+        courseData = { data: response.data, error: null };
+      } catch (err) {
+        courseData = { error: err.message || 'Course not found' };
+      }
+    }
 
     if (courseData.error) {
-      // Try WooCommerce product instead
-      const productData = await getWordPressData({
-        endpoint: `/wp/v2/products/${course_id}`,
-        params: {}
-      });
-
-      if (productData.error) {
-        return {
-          error: 'Course not found',
-          course_id
-        };
-      }
-
-      // Extract PDFs from product meta
-      const pdfs = extractPDFsFromMeta(productData.data.meta || {});
       return {
-        course_id,
-        course_title: productData.data.name || productData.data.title?.rendered,
-        pdfs: pdfs
+        error: 'Course not found',
+        course_id
       };
     }
+
+    // Extract PDFs from course/product meta
+    const pdfs = extractPDFsFromMeta(courseData.data.meta || {});
+    return {
+      course_id,
+      course_title: courseData.data.name || courseData.data.title?.rendered || courseData.data.title,
+      pdfs: pdfs
+    };
 
     // Extract PDFs from course meta
     const versionContent = courseData.data.meta?.flms_version_content || {};
